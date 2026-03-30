@@ -1,7 +1,8 @@
 # lk_blog
 
 配置公网可以访问自建的龙虾
-
+核心在于将 "bind": "loopback" 改为 "bind": "lan" (或者直接写 "0.0.0.0")。
+关键一步：在 "gateway" 层级下添加 "controlUi": { "allowInsecureAuth": true }，否则浏览器会报 HTTPS 错误。
 "gateway": {
   "port": 18789,
   "bind": "lan",
