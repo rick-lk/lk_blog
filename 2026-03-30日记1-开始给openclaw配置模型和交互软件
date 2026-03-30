@@ -1,0 +1,105 @@
+配置好网关后，现在我们要赋予 OpenClaw “大脑”和“交互方式”。这通常分为两步：
+1.  **配置模型**：让 OpenClaw 知道使用哪个 AI 模型（如 Gemini、GPT-4 等）。
+2.  **配置交互软件**：决定你通过什么界面与它对话（Web 控制台、终端 TUI 等）。
+
+请按照以下步骤操作：
+
+### 🧠 第一步：配置模型
+
+OpenClaw 支持多种模型提供商。目前最推荐且配置最简单的是 Google 的 **Gemini** 模型（因为 OpenClaw 对 Gemini 有深度优化，且免费额度足够个人使用）。
+
+#### 1. 获取 API Key
+如果你还没有 API Key：
+-   前往 [Google AI Studio](https://aistudio.google.com/app/apikey)
+-   点击 **Create API Key**。
+-   复制你的密钥（以 `AIza...` 开头）。
+
+#### 2. 修改配置文件
+在 Ubuntu 终端中编辑主配置文件：
+
+```bash
+nano ~/.openclaw/openclaw.json
+```
+
+找到 `"models"` 或 `"defaultModel"` 部分（如果没有，可以在根层级添加）。你需要配置 `gemini` 相关的设置。
+
+**推荐的配置模板（JSON）：**
+
+```json
+"models": {
+  "gemini": {
+    "apiKey": "你的_GEMINI_API_KEY_粘贴在这里",
+    "model": "gemini-2.0-flash-exp", 
+    "temperature": 0.7
+  }
+},
+"defaultModel": "gemini"
+```
+
+-   **`apiKey`**: 填入刚才复制的密钥。
+-   **`model`**: 推荐使用 `gemini-2.0-flash-exp` 或 `gemini-1.5-pro`。前者速度极快，后者逻辑更强。
+-   **`defaultModel`**: 设置为 `gemini`，这样 OpenClaw 启动时就会默认使用它。
+
+*注意：如果你使用的是 OpenAI 的模型（如 GPT-4o），配置结构类似，只需将 `gemini` 换成 `openai` 并填入对应的 Key 即可。*
+
+### 💻 第二步：配置交互软件
+
+既然你是在 ECS 上部署，**Web UI** 是最推荐的交互方式。你之前已经配置好了网关，现在只需要确保 Web UI 的入口是开启的。
+
+#### 1. 验证 Web UI 配置
+在刚才的 `~/.openclaw/openclaw.json` 文件中，确保 `controlUi` 部分配置正确（我们在上一步已经做过了）。
+
+确保配置如下：
+```json
+"controlUi": {
+  "allowedOrigins": [
+    "http://你的公网IP:18789"
+  ],
+  "allowInsecureAuth": true,
+  "dangerouslyDisableDeviceAuth": true
+}
+```
+
+#### 2. 启动并访问
+1.  **保存并退出** `nano` 编辑器（`Ctrl+O` 保存，`Ctrl+X` 退出）。
+2.  **重启服务**以加载模型配置：
+    ```bash
+    openclaw gateway restart
+    ```
+3.  **在浏览器访问**：
+    打开你本地电脑的浏览器，输入：
+    `http://你的公网IP:18789/?token=你的Token`
+
+### 🎮 第三步：开始交互
+
+进入 Web 界面后，你会看到一个类似聊天窗口的界面。
+
+1.  **检查模型状态**：
+    在界面的右上角或设置里，确认当前选中的模型是 **Gemini**（或者你配置的其他模型）。
+2.  **发送第一条指令**：
+    在输入框输入：
+    > "你好，OpenClaw。请告诉我当前 Ubuntu 系统的版本号和 CPU 信息。"
+
+    如果 OpenClaw 能够调用工具并返回系统信息，说明**模型配置**和**交互软件**都已成功连接！
+
+### 💡 进阶：配置终端交互
+
+如果你想在 SSH 终端里直接和它对话（不使用浏览器），可以安装并配置终端插件。
+
+1.  **安装依赖**（如果需要）：
+    ```bash
+    npm install -g @openclaw/cli
+    ```
+2.  **运行终端模式**：
+    ```bash
+    openclaw cli
+    ```
+    *(注意：这需要你的终端支持较好的渲染能力，通常 Web UI 体验更佳)*
+
+### 📌 总结检查清单
+-   [ ] **API Key** 已填入 `~/.openclaw/openclaw.json`。
+-   [ ] **默认模型** 已设置为 `gemini`。
+-   [ ] **网关** 已重启 (`openclaw gateway restart`)。
+-   [ ] **浏览器** 能成功打开 Web UI 并看到输入框。
+
+完成这些后，你的 OpenClaw 就已经完全“活”过来了！
